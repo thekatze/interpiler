@@ -90,9 +90,26 @@ impl<'a> Lexer<'a> {
 
         // numbers
         if character.is_numeric() {
-            // TODO: actually parse numbers
-            (_, self.text) = self.text.split_at(1);
-            return Some(Token::Integer(0));
+            // TODO: see if this can be made better
+            let mut index = 0;
+            let mut chars = self.text.chars();
+            while let Some(c) = chars.next() {
+                if c.is_whitespace() || !c.is_numeric() {
+                    break;
+                }
+
+                index += 1;
+            }
+
+            let number;
+            (number, self.text) = self.text.split_at(index);
+
+            let Ok(parsed) = number.parse::<i64>() else {
+                dbg!(number);
+                return Some(Token::Illegal);
+            };
+
+            return Some(Token::Integer(parsed));
         }
 
         // we dont know what the heck we got
